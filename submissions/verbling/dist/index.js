@@ -1052,7 +1052,7 @@
 /* 168 */
 /***/ function(module, exports, __webpack_require__) {
 
-	eval("'use strict';\n\nvar React = __webpack_require__(148);\nvar ReactDOM = __webpack_require__(2);\n\nvar Masthead = React.createClass({\n  displayName: 'Masthead',\n\n  render: function render() {\n    return React.createElement(\n      'h1',\n      { className: 'css-planet-monitor' },\n      this.props.currentWorld\n    );\n  }\n\n});\n\nmodule.exports = Masthead;\n\n/*****************\n ** WEBPACK FOOTER\n ** ./src/views/Masthead.js\n ** module id = 168\n ** module chunks = 0\n **/\n//# sourceURL=webpack:///./src/views/Masthead.js?");
+	eval("'use strict';\n\nvar React = __webpack_require__(148);\nvar ReactDOM = __webpack_require__(2);\n\nvar Masthead = React.createClass({\n  displayName: 'Masthead',\n\n  render: function render() {\n    return React.createElement(\n      'h1',\n      { className: 'css-planet-monitor' },\n      'Obi-Wan currently on ',\n      this.props.currentWorld\n    );\n  }\n\n});\n\nmodule.exports = Masthead;\n\n/*****************\n ** WEBPACK FOOTER\n ** ./src/views/Masthead.js\n ** module id = 168\n ** module chunks = 0\n **/\n//# sourceURL=webpack:///./src/views/Masthead.js?");
 
 /***/ },
 /* 169 */

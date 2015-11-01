@@ -5,7 +5,7 @@ var Masthead = React.createClass({
 
   render: function(){
     return (
-	  <h1 className="css-planet-monitor">{this.props.currentWorld}</h1>
+	  <h1 className="css-planet-monitor">Obi-Wan currently on {this.props.currentWorld}</h1>
     )
   }
 
