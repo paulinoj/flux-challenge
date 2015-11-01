@@ -12,6 +12,7 @@ app.use(function(req, res, next) {
   res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
   next();
 });
+app.use(express.static(__dirname + '/../submissions/verbling'));
 
 function augmentJediWithNeighborUrls(urlBase) {
   return function (jedi) {
@@ -30,6 +31,10 @@ function augmentJediWithNeighborUrls(urlBase) {
     };
   };
 }
+
+app.get('/', function(req, res) {
+  res.render('index.html');
+});
 
 app.get('/dark-jedis', function (req, res) {
   console.log('GET /dark-jedis');

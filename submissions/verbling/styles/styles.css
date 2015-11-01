@@ -54,6 +54,10 @@ body {
   height: 1.7em;
 }
 
+.css-slot.highlighted {
+  color: #FF0000;
+}
+
 .css-slot h3, .css-slot h4, .css-slot h5, .css-slot h6 {
   margin: 0;
 }
@@ -99,4 +103,7 @@ body {
 .css-button-disabled {
   opacity: 0.5;
 }
+
+a.fillthediv{display:block;height:100%;width:100%;text-decoration: none;}
+
 

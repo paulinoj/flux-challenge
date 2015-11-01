@@ -3,9 +3,13 @@ var webpack = require('webpack');
 
 module.exports = {
   devtool: 'eval',
+  // entry: [
+  //   './src/index',
+  // ],
   entry: [
     './src/index',
   ],
+
   output: {
     path: path.join(__dirname, 'dist'),
     filename: 'index.js',
