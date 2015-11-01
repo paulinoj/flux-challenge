@@ -6,7 +6,7 @@ var connection;
 
 var SocketAPI = {
   socketConnect: function() {
-    connection=new WebSocket("ws://localhost:4000",'json');
+    connection=new WebSocket('ws://localhost:4000','json');
     connection.onopen = function () {
       connection.send('Message'); 
     };
@@ -15,7 +15,7 @@ var SocketAPI = {
     };
     connection.onmessage = function (e) {
       console.log('Received From Server: ' + e.data); 
-	  SocketActions.updateCurrentWorld(JSON.parse(e.data).name);
+	    SocketActions.updateCurrentWorld(JSON.parse(e.data).name);
     };
   },
 

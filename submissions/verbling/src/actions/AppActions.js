@@ -3,17 +3,17 @@ var AppConstants = require('../constants/AppConstants');
 
 var AppActions = {
 
-  clickUp: function(item){
+  clickUp: function(){
     AppDispatcher.handleViewAction({
       actionType: AppConstants.CLICK_UP,
-      data: item
+      data: null
     });
   },
 
-  clickDown: function(item){
+  clickDown: function(){
     AppDispatcher.handleViewAction({
       actionType: AppConstants.CLICK_DOWN,
-      data: item
+      data: null
     })
   }
 

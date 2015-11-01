@@ -6,41 +6,42 @@ var Masthead = require('./Masthead.js');
 var ButtonPanel = require('./ButtonPanel.js');
 var List = require('./List.js');
 var AppStore = require('../stores/AppStore.js');
-var SocketAPI = require('../lib/SocketAPI.js');
-var AjaxAPI = require('../lib/AjaxAPI.js');
 
 var Main = React.createClass({
 
   getInitialState: function(){
-    SocketAPI.socketConnect();
-    AjaxAPI.initialize();
+    AppStore.initialize();
     return {
       list: AppStore.getList(),
       currentWorld: AppStore.getCurrentWorld()
     }
   },
+
   componentDidMount: function(){
     AppStore.addChangeListener(this._onChange);
   },
+
   componentWillUnmount: function(){
     AppStore.removeChangeListener(this._onChange);
   },
+
   handleClickUp: function(){
     AppActions.clickUp();
   },
+
   handleClickDown: function(){
     AppActions.clickDown();
   },
+
   _onChange: function(){
     this.setState({
       list: AppStore.getList(),
       currentWorld: AppStore.getCurrentWorld()
     })
+
   },
 
   render: function(){
-
-    var _this = this;
     return (
       <div className="app-container">
         <div className="css-root">

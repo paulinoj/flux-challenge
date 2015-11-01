@@ -3,10 +3,10 @@ var AppConstants = require('../constants/AppConstants');
 
 var SocketActions = {
 
-  updateCurrentWorld: function(item){
+  updateCurrentWorld: function(currentWorld){
     AppDispatcher.handleServerAction({
       actionType: AppConstants.UPDATE_CURRENT_WORLD,
-      data: item
+      data: currentWorld
     });
   }
 

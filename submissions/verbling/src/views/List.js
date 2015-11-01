@@ -3,21 +3,22 @@ var ReactDOM = require('react-dom');
 var ListItem = require('./ListItem');
 
 var List = React.createClass({
+
   render: function(){
-  	var _this = this;
     return (
 	    <ul className="css-slots">
 	      {this.props.list.map(function(object, i) {
 
 	        return <ListItem name={object ? object.name : ''} 
 	                         homeworld={object ? object.homeworld.name : ''}
-	                         currentWorld = {_this.props.currentWorld}
+	                         currentWorld={this.props.currentWorld}
 	                         key={i} />
 
-	      })}
+	      }, this)}
 	    </ul>
     )
   }
+
 });
 
 module.exports = List;

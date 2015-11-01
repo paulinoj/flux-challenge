@@ -16,6 +16,7 @@ var ListItem = React.createClass({
 	  </li>
     )
   }
+
 });
 
 module.exports = ListItem;
