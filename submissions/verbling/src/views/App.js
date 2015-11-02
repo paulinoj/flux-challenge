@@ -13,7 +13,8 @@ var Main = React.createClass({
     AppStore.initialize();
     return {
       list: AppStore.getList(),
-      currentWorld: AppStore.getCurrentWorld()
+      currentWorld: AppStore.getCurrentWorld(),
+      isFrozen: AppStore.isFrozen()
     }
   },
 
@@ -36,7 +37,8 @@ var Main = React.createClass({
   _onChange: function(){
     this.setState({
       list: AppStore.getList(),
-      currentWorld: AppStore.getCurrentWorld()
+      currentWorld: AppStore.getCurrentWorld(),
+      isFrozen: AppStore.isFrozen()      
     })
 
   },
@@ -56,7 +58,8 @@ var Main = React.createClass({
             <ButtonPanel clickUp={this.handleClickUp} 
                          clickDown={this.handleClickDown}
                          list={this.state.list}
-                         currentWorld={this.state.currentWorld} />
+                         currentWorld={this.state.currentWorld}
+                         isFrozen={this.state.isFrozen} />
 
           </section>
         </div>      

@@ -48,11 +48,9 @@ var ButtonPanel = React.createClass({
     // Disable buttons if the currentWorld is the homeworld of any Siths
     // currently on the list
 
-    for (var i = 0; i < this.props.list.length; i++) {
-      if (this.props.list[i] !== '' && this.props.list[i].homeworld.name === this.props.currentWorld) {
+    if (this.props.isFrozen) {
         disableUpButton();
         disableDownButton();
-      }
     }
 
     // If there are no items in the list at all (so list[lastIndex] is undefined)

@@ -10,7 +10,8 @@ var listSize = 5;
 
 var _store = {
   list: [],
-  currentWorld: ''
+  currentWorld: '',
+  isFrozen: false
 };
 
 // Initialize list with 5 empty slots
@@ -26,6 +27,16 @@ for (var i = 0; i < listSize; i++) {
 
 var initialize = function(array) {
   _store.list = array;
+};
+
+var updateFrozenState = function() {
+  var isFrozen = false;
+  for (var i=0; i < _store.list.length; i++) {
+    if (_store.list[i] !== "" && _store.list[i].homeworld.name === _store.currentWorld) {
+      isFrozen = true;
+    }
+  }
+  _store.isFrozen = isFrozen; 
 };
 
 // Clear two items from top of list and shift whole list up 2 items, leaving 
@@ -57,17 +68,22 @@ var removeTwoApprentices = function(array) {
 // AjaxAPI, an action is dispatched that results in that item being placed 
 // into the store individually using the store's addMaster function.
 
-var requestTwoMasters = function() {
-  var topMaster = _store.list[2];
-  AjaxAPI.requestTwoSiths(topMaster, 'master');
+var requestMasters = function(quantity) {
+  if (quantity !== 0) {
+    var topMaster = _store.list[quantity];
+    console.log("MASTER");
+    AjaxAPI.requestSiths(topMaster, 'master', quantity);
+  }
 }
 
 // requestTwoApprentices: This function operates in a manner similar to
 // requestTwoMasters above. 
 
-var requestTwoApprentices = function() {
-  var bottomApprentice = _store.list[2];
-  AjaxAPI.requestTwoSiths(bottomApprentice, 'apprentice');
+var requestApprentices = function(quantity) {
+  if (quantity !== 0) {
+    var bottomApprentice = _store.list[4-quantity];
+    AjaxAPI.requestSiths(bottomApprentice, 'apprentice', quantity);
+  }
 }
 
 // addMaster:  This places in the store each Sith requested by the AjaxAPI
@@ -80,45 +96,78 @@ var requestTwoApprentices = function() {
 // uses that information to place the data in the appropriate index of the
 // store, filling the two empty slots starting from the second one upward
 
-var addMaster = function(array) {
-  var length = array.length;
-  _store.list[2 - length] = array[length - 1];
+var addMaster = function(responseObject) {
+  if (!_store.isFrozen) {
+    console.log("THIS:  ");
+    console.log(responseObject.quantity - responseObject.orderNum);
+    _store.list[responseObject.quantity - responseObject.orderNum] = responseObject.Sith;
+    updateFrozenState();
+  }
 }
 
 // addApprentice:  This function operates in a manner similar to addMaster
 // above.
 
-var addApprentice = function(array) {
-  var length = array.length;
-  _store.list[2 + length] = array[length - 1];
+var addApprentice = function(responseObject) {
+  if (!_store.isFrozen) {
+    _store.list[4 - (responseObject.quantity - responseObject.orderNum)] = responseObject.Sith;
+    updateFrozenState();
+  }
 }
 
 var updateCurrentWorld = function(data) {
-  _store.currentWorld = data; 
+  _store.currentWorld = data;
+  updateFrozenState();
+  // Continue filling empty spaces that are waiting
+  if (!_store.isFrozen && (AjaxAPI.xhr.readystate === 0 || AjaxAPI.xhr.readystate === 4)) {
+    var firstIndex = 0;
+    while (_store.list[firstIndex] == '') {
+      firstIndex++;
+    }
+    if (firstIndex !== 0 && firstIndex <= 4) {
+      // Fill in from top
+      console.log("DO WE GET HERE 1");
+      requestMasters(firstIndex);
+    }
+    else
+    {
+      // Get index of last Sith in list
+      var lastIndex = 4;
+      while (_store.list[lastIndex] == '') {
+        lastIndex--;
+      }
+      if (lastIndex !== 4 && lastIndex >= 0) {
+        requestApprentices(4-lastIndex);
+      }
+    }
+  }
 };
 
 var AppStore = ObjectAssign({}, EventEmitter.prototype, {
-  addChangeListener: function(cb){
+  addChangeListener: function(cb) {
     this.on(CHANGE_EVENT, cb);
   },
-  removeChangeListener: function(cb){
+  removeChangeListener: function(cb) {
     this.removeListener(CHANGE_EVENT, cb);
   },
   initialize: function() {
     SocketAPI.socketConnect();
     AjaxAPI.initialize();
   },
-  getList: function(){
+  getList: function() {
     return _store.list;      
   },
-  getCurrentWorld: function(){
+  getCurrentWorld: function() {
     return _store.currentWorld;      
-  }  
+  },
+  isFrozen: function() {
+    return _store.isFrozen;
+  }
 });
 
-AppDispatcher.register(function(payload){
+AppDispatcher.register(function(payload) {
   var action = payload.action;
-  switch(action.actionType){
+  switch (action.actionType) {
 
     case AppConstants.CLICK_DOWN:
 
@@ -133,7 +182,7 @@ AppDispatcher.register(function(payload){
       if (_store.list[4] !== '') {
         removeTwoMasters();
         AppStore.emit(CHANGE_EVENT);
-        requestTwoApprentices();
+        requestApprentices(2);
         AppStore.emit(CHANGE_EVENT);
       }
       break;
@@ -146,7 +195,7 @@ AppDispatcher.register(function(payload){
       if (_store.list[0] !== '') {
         removeTwoApprentices();
         AppStore.emit(CHANGE_EVENT);
-        requestTwoMasters();
+        requestMasters(2);
         AppStore.emit(CHANGE_EVENT);
       }
       break;

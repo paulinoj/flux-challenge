@@ -12,20 +12,20 @@ var makeGetRequest = function(route) {
 
 var AjaxAPI = {
 
+  xhr: xhr,
+
   // requestsTwoSiths:  Makes two ajax requests in series where each request
   // retrieves a Sith from the database.  If the second argument is "master",
   // it retrieves the master and the grandmaster of the Sith whose ID is 
   // passed as the first argument.  If the second argument is "apprentice",
   // it retrieves the apprentice and grandapprentice instead.
 
-  requestTwoSiths: function(Sith, relationship){
-    var sithArray = [];
+  requestSiths: function(Sith, relationship, quantity){
     var response;
     var id = relationship === 'master' ? Sith.master.id : 
              relationship === 'apprentice' ? Sith.apprentice.id : null;
     if (id) {
       var url = '/dark-jedis/' + id;
-      var count = 2;
 
       // Abort previous request if it has not finished yet (this
       // only occurs when the user has clicked on the button opposite the
@@ -35,7 +35,7 @@ var AjaxAPI = {
       // short circuited by the AppDispatcher and ignored, so such a click
       // never invokes this AjaxAPI.requestTwoSiths function). 
 
-      if (xhr.onreadystatechange !== 0 && xhr.onreadystatechange !== 4) {
+      if (xhr.readyState !== 0 && xhr.readyState !== 4) {
         xhr.abort();
       }
       var asyncLoopWrapper = function(url, count) {
@@ -43,15 +43,15 @@ var AjaxAPI = {
         xhr.onreadystatechange = function() {
           if (xhr.readyState === 4 && xhr.status === 200) {
             response = JSON.parse(xhr.responseText);
-            sithArray.push(response);
+            var finalResponse = {Sith: response, orderNum: count, quantity: quantity};
             if (relationship === 'master') {
-              AjaxActions.addMaster(sithArray);
+              AjaxActions.addMaster(finalResponse);
             }
             else if (relationship === 'apprentice') {
-              AjaxActions.addApprentice(sithArray);
+              AjaxActions.addApprentice(finalResponse);
             }
-            count--;
-            if (count > 0) {
+            count++;
+            if (count <= quantity) {
               id = relationship === 'master' ? response.master.id : 
                    relationship === 'apprentice' ? response.apprentice.id : null;
               if (id) {
@@ -62,7 +62,7 @@ var AjaxAPI = {
           }
         };
       };
-      asyncLoopWrapper(url, 2);
+      asyncLoopWrapper(url, 1);
     }
   },
 
