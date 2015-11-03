@@ -9,7 +9,7 @@ var CHANGE_EVENT = 'change';
 var listSize = 5;
 
 // list: an array containing the 5 Siths to be displayed
-// currentWorld:  a string containing the currentWorld being visited by Obi Wan
+// currentWorld:  a string containing the currentWorld being visited by Obi-Wan
 // isFrozen: a boolean indicating whether the currentWorld is equal to one of
 // the homeworlds of the Siths in our display list 
 
@@ -25,24 +25,18 @@ for (var i = 0; i < listSize; i++) {
   _store.list.push('');
 }
 
-// lookupTable is a hash table that contains all the Siths currently in our
-// array for fast lookup
+// lookupTable is a hash table that contains the homeworlds of all the
+// Siths currently in our array.  Used for fast lookup.
 
 var lookupTable = {};
 
-
 var updateFrozenState = function() {
-  var isFrozen = false;
-  if (_store.currentWorld !== '') {
-    if (lookupTable[_store.currentWorld]) {
-      isFrozen = true;
-    }
-  }
-  _store.isFrozen = isFrozen; 
+  _store.isFrozen = lookupTable[_store.currentWorld]; 
 };
 
-// Clear two items from top of list and shift whole list up 2 items, leaving 
-// two empty items at bottom
+// Clear 2 Siths from top of list and shift whole list up by 2, leaving 
+// 2 empty items at bottom.  Remove homeworlds of deleted Siths from
+// lookupTable beforehand.
 
 var removeTwoMasters = function(array) {
   if (_store.list[0]) {
@@ -58,8 +52,9 @@ var removeTwoMasters = function(array) {
   list.push('');
 };
 
-// Clear two items from bottom of list and shift whole list down 2 items, 
-// leaving two empty items at top
+// Clear 2 Siths from bottom of list and shift whole list down by 2, 
+// leaving 2 empty items at top.  Remove homeworlds of deleted Siths from
+// lookupTable beforehand.
 
 var removeTwoApprentices = function(array) {
   if (_store.list[3]) {
@@ -75,27 +70,27 @@ var removeTwoApprentices = function(array) {
   list.unshift('');
 };
 
-// requestTwoMasters: Requests two Siths from database that are the master and
-// grandmaster of the Sith currently at the top of the list (because the 
-// top two slots are empty when this function is called, the top Sith is the 
-// one in index position 2).  For each datum (Sith) requested by the 
+// requestMasters: Request n Siths from database that are on the master
+// side of the Sith currently at the top of the list (because the 
+// top n slots are empty when this function is called, the top Sith is the 
+// one in index position n).  For each datum (Sith) requested by the 
 // AjaxAPI, an action is dispatched that results in that item being placed 
 // into the store individually using the store's addMaster function.
 
-var requestMasters = function(quantity) {
-  if (quantity !== 0) {
-    var topMaster = _store.list[quantity];
-    AjaxAPI.requestSiths(topMaster, 'master', quantity);
+var requestMasters = function(n) {
+  if (n !== 0) {
+    var topMaster = _store.list[n];
+    AjaxAPI.requestSiths(topMaster, 'master', n);
   }
 };
 
-// requestTwoApprentices: This function operates in a manner similar to
-// requestTwoMasters above. 
+// requestApprentices: This function operates in a manner similar to
+// requestMasters above. 
 
-var requestApprentices = function(quantity) {
-  if (quantity !== 0) {
-    var bottomApprentice = _store.list[4-quantity];
-    AjaxAPI.requestSiths(bottomApprentice, 'apprentice', quantity);
+var requestApprentices = function(n) {
+  if (n !== 0) {
+    var bottomApprentice = _store.list[4-n];
+    AjaxAPI.requestSiths(bottomApprentice, 'apprentice', n);
   }
 };
 
@@ -113,14 +108,14 @@ var addInitialSith = function(responseObject) {
 };
 
 // addMaster:  This places in the store each Sith requested by the AjaxAPI
-// when requestTwoMasters is called, with each Sith being
-// processed by a separate action.  The first action carries an array 
-// payload of length 1 and contains the master.  The second action carries
-// an array payload of length 2 and contains both the master and the 
-// grandmaster.  Because the second array sent is longer than the first, 
-// addMaster is able to determine which payload was sent later and
-// uses that information to place the data in the appropriate index of the
-// store, filling the two empty slots starting from the second one upward
+// when requestMasters is called, with each Sith being
+// processed by a separate action (so, for instance, if requestMasters
+// requested 2 Siths, addMaster will end up being called 2 times).
+// Each response object contains a property indicating the sequence order of
+// that response, which is used to place the response at the proper array
+// index of the store.  Responses are only added to the store if the
+// UI is not in a frozen state, otherwise, they are discarded and requested
+// again once the UI is unfrozen.  
 
 var addMaster = function(responseObject) {
   if (!_store.isFrozen) {
@@ -147,14 +142,29 @@ var addApprentice = function(responseObject) {
   }
 };
 
+// updateCurrentWorld:  This sets the currentWorld using data received from the
+// websocket.  It then checks the currentWorld against the homeworlds of the
+// Siths currently in our list and determines whether the UI should be frozen.
+// If it should be frozen, all outstanding ajax requests are cancelled.
+// However, if it should not be frozen, then we need to determine if we
+// have transitioned from a frozen state to an unfrozen state that has left 
+// empty slots in the list.  If there are no outstanding ajax requests
+// yet there are empty slots either at the top or bottom of the list, then
+// we need to make new ajax requests to fill them up.
+
 var updateCurrentWorld = function(data) {
   _store.currentWorld = data;
   updateFrozenState();
   if (_store.isFrozen) {
     abortAjaxRequests();
   }
-  // Continue filling empty spaces that are waiting
+
+  // Fill up empty slots that were left empty by previous frozen state
+
   if (!_store.isFrozen && (AjaxAPI.xhr.readyState === 0 || AjaxAPI.xhr.readyState === 4)) {
+
+  // Determine if empty slots at top and if so, find top Sith and fill in masters upward
+
     var firstIndex = 0;
     while (_store.list[firstIndex] == '') {
       firstIndex++;
@@ -164,8 +174,11 @@ var updateCurrentWorld = function(data) {
       requestMasters(firstIndex);
     }
     else
+
+  // Otherwise, check to see if there are empty slots at bottom and if so, find
+  // bottom Sith and fill in apprentices downward
+
     {
-      // Get index of last Sith in list
       var lastIndex = 4;
       while (_store.list[lastIndex] == '') {
         lastIndex--;

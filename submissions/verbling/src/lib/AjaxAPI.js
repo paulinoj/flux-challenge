@@ -14,11 +14,12 @@ var AjaxAPI = {
 
   xhr: xhr,
 
-  // requestsTwoSiths:  Makes two ajax requests in series where each request
+  // requestSiths:  Makes multiple ajax requests in series where each request
   // retrieves a Sith from the database.  If the second argument is "master",
-  // it retrieves the master and the grandmaster of the Sith whose ID is 
-  // passed as the first argument.  If the second argument is "apprentice",
-  // it retrieves the apprentice and grandapprentice instead.
+  // it retrieves Siths on the master side of the Sith passed as the first
+  // argument.  If the second argument is "apprentice", it retrieves 
+  // Siths on the apprentice side.  The number of Siths requested is determined
+  // by the quantity argument.
 
   requestSiths: function(Sith, relationship, quantity){
     var response;
@@ -33,7 +34,7 @@ var AjaxAPI = {
       // the same button twice in a row and the requests triggered by
       // the first click have not yet finished, the second click is
       // short circuited by the AppDispatcher and ignored, so such a click
-      // never invokes this AjaxAPI.requestTwoSiths function). 
+      // never invokes this AjaxAPI.requestSiths function). 
 
       if (xhr.readyState !== 0 && xhr.readyState !== 4) {
         xhr.abort();
@@ -66,12 +67,10 @@ var AjaxAPI = {
     }
   },
 
-  // initialize:  Makes 5 Ajax requests for apprentices starting with 
-  // Sith ID 3616.  The asyncLoopWrapper makes sure the responses arrive
-  // in the same order the calls were made.  The response of each request
-  // is pushed into an array which is then sent as the payload of
-  // an action that updates the AppStore list by replacing it entirely
-  // with the payload.
+  // initialize:  Makes an ajax request for one Sith whose ID is passed
+  // as the argument, than makes ajax requests for 4 more Siths on the
+  // apprentice side of the initial Sith.  This function is used to 
+  // populate the store initially.
 
   initialize: function(SithID) {
     var url = '/dark-jedis/' + SithID;
@@ -85,8 +84,6 @@ var AjaxAPI = {
       }
     };    
   }
-
-
 };
 
 module.exports = AjaxAPI;
