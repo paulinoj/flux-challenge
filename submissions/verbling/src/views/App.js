@@ -1,11 +1,11 @@
 var React = require('react');
 var ReactDOM = require('react-dom');
-var AppActions = require('../actions/AppActions.js');
-var SocketActions = require('../actions/SocketActions.js');
-var Masthead = require('./Masthead.js');
-var ButtonPanel = require('./ButtonPanel.js');
-var List = require('./List.js');
-var AppStore = require('../stores/AppStore.js');
+var AppActions = require('../actions/AppActions');
+var SocketActions = require('../actions/SocketActions');
+var Masthead = require('./Masthead');
+var ButtonPanel = require('./ButtonPanel');
+var List = require('./List');
+var AppStore = require('../stores/AppStore');
 
 var Main = React.createClass({
 

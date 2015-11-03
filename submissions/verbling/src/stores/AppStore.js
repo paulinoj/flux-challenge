@@ -3,7 +3,7 @@ var AppConstants = require('../constants/AppConstants');
 var ObjectAssign = require('react/lib/Object.assign');
 var EventEmitter = require('events').EventEmitter;
 var AjaxAPI = require('../lib/AjaxAPI');
-var SocketAPI = require('../lib/SocketAPI.js');
+var SocketAPI = require('../lib/SocketAPI');
 
 var CHANGE_EVENT = 'change';
 var listSize = 5;
@@ -34,12 +34,6 @@ var lookupTable = {};
 var updateFrozenState = function() {
   var isFrozen = false;
   if (_store.currentWorld !== '') {
-    // for (var i=0; i < _store.list.length; i++) {
-    //   if (_store.list[i] !== '' && _store.list[i].homeworld.name === _store.currentWorld) {
-    //     isFrozen = true;
-    //   }
-    // }
-    console.log(lookupTable);
     if (lookupTable[_store.currentWorld]) {
       isFrozen = true;
     }
