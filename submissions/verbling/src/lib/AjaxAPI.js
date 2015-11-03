@@ -79,7 +79,8 @@ var AjaxAPI = {
     xhr.onreadystatechange = function() {
       if (xhr.readyState === 4 && xhr.status === 200) {
         var response = JSON.parse(xhr.responseText);
-        AjaxActions.addInitialSith(response);
+        var wrappedResponse = {Sith: response};
+        AjaxActions.addInitialSith(wrappedResponse);
         AjaxAPI.requestSiths(response, 'apprentice', 4);
       }
     };    

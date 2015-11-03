@@ -25,13 +25,23 @@ for (var i = 0; i < listSize; i++) {
   _store.list.push('');
 }
 
+// lookupTable is a hash table that contains all the Siths currently in our
+// array for fast lookup
+
+var lookupTable = {};
+
+
 var updateFrozenState = function() {
   var isFrozen = false;
   if (_store.currentWorld !== '') {
-    for (var i=0; i < _store.list.length; i++) {
-      if (_store.list[i] !== '' && _store.list[i].homeworld.name === _store.currentWorld) {
-        isFrozen = true;
-      }
+    // for (var i=0; i < _store.list.length; i++) {
+    //   if (_store.list[i] !== '' && _store.list[i].homeworld.name === _store.currentWorld) {
+    //     isFrozen = true;
+    //   }
+    // }
+    console.log(lookupTable);
+    if (lookupTable[_store.currentWorld]) {
+      isFrozen = true;
     }
   }
   _store.isFrozen = isFrozen; 
@@ -41,6 +51,12 @@ var updateFrozenState = function() {
 // two empty items at bottom
 
 var removeTwoMasters = function(array) {
+  if (_store.list[0]) {
+    lookupTable[_store.list[0].homeworld.name] = false;
+  }
+  if (_store.list[1]) {
+    lookupTable[_store.list[1].homeworld.name] = false;
+  }  
   var list = _store.list;
   list.shift();
   list.shift();
@@ -52,6 +68,12 @@ var removeTwoMasters = function(array) {
 // leaving two empty items at top
 
 var removeTwoApprentices = function(array) {
+  if (_store.list[3]) {
+    lookupTable[_store.list[3].homeworld.name] = false;
+  }
+  if (_store.list[4]) {
+    lookupTable[_store.list[4].homeworld.name] = false;
+  }  
   var list = _store.list;
   list.pop();
   list.pop();
@@ -88,7 +110,8 @@ var abortAjaxRequests = function() {
 };
 
 var addInitialSith = function(responseObject) {
-  _store.list[0] = responseObject;
+  _store.list[0] = responseObject.Sith;
+  lookupTable[responseObject.Sith.homeworld.name] = true;
   updateFrozenState();
   if (_store.isFrozen) {
     abortAjaxRequests();
@@ -108,6 +131,7 @@ var addInitialSith = function(responseObject) {
 var addMaster = function(responseObject) {
   if (!_store.isFrozen) {
     _store.list[responseObject.quantity - responseObject.orderNum] = responseObject.Sith;
+    lookupTable[responseObject.Sith.homeworld.name] = true;
     updateFrozenState();
     if (_store.isFrozen) {
       abortAjaxRequests();
@@ -121,6 +145,7 @@ var addMaster = function(responseObject) {
 var addApprentice = function(responseObject) {
   if (!_store.isFrozen) {
     _store.list[4 - (responseObject.quantity - responseObject.orderNum)] = responseObject.Sith;
+    lookupTable[responseObject.Sith.homeworld.name] = true;
     updateFrozenState();
     if (_store.isFrozen) {
       abortAjaxRequests();
