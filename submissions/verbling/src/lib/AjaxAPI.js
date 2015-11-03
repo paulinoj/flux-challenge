@@ -73,33 +73,19 @@ var AjaxAPI = {
   // an action that updates the AppStore list by replacing it entirely
   // with the payload.
 
-  initialize: function() {
-    var url = '/dark-jedis/3616';
-    var counter = 0;
-    var maxSize = 5;
-    var response;
-    var answerArray = ['', '', '', '', ''];
-    var id;
-    var asyncLoopWrapper = function(url) {
-      xhr = makeGetRequest(url);
-      xhr.onreadystatechange = function() {
-        if (xhr.readyState == 4 && xhr.status == 200) {
-          response = JSON.parse(xhr.responseText);
-          answerArray[counter] = response;
-          AjaxActions.initialize(answerArray);         
-          counter++;
-          if (counter < maxSize) {
-            id = response.apprentice.id;
-            if (id) {
-              url = '/dark-jedis/' + id;
-              asyncLoopWrapper(url);
-            }
-          }
-        }
-      };
-    };
-    asyncLoopWrapper(url);
+  initialize: function(SithID) {
+    var url = '/dark-jedis/' + SithID;
+    xhr = makeGetRequest(url);
+    xhr.onreadystatechange = function() {
+      if (xhr.readyState === 4 && xhr.status === 200) {
+        var response = JSON.parse(xhr.responseText);
+        AjaxActions.addInitialSith(response);
+        AjaxAPI.requestSiths(response, 'apprentice', 4);
+      }
+    };    
   }
+
+
 };
 
 module.exports = AjaxAPI;

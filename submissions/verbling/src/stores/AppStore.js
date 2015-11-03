@@ -8,6 +8,11 @@ var SocketAPI = require('../lib/SocketAPI.js');
 var CHANGE_EVENT = 'change';
 var listSize = 5;
 
+// list: an array containing the 5 Siths to be displayed
+// currentWorld:  a string containing the currentWorld being visited by Obi Wan
+// isFrozen: a boolean indicating whether the currentWorld is equal to one of
+// the homeworlds of the Siths in our display list 
+
 var _store = {
   list: [],
   currentWorld: '',
@@ -20,20 +25,13 @@ for (var i = 0; i < listSize; i++) {
   _store.list.push('');
 }
 
-// initialize:  This function completes the action dispatched by the 
-// AjaxAPI when it is making the initial request from the database
-// at startup.  It takes the payload from that action and replaces
-// _store.list entirely.
-
-var initialize = function(array) {
-  _store.list = array;
-};
-
 var updateFrozenState = function() {
   var isFrozen = false;
-  for (var i=0; i < _store.list.length; i++) {
-    if (_store.list[i] !== "" && _store.list[i].homeworld.name === _store.currentWorld) {
-      isFrozen = true;
+  if (_store.currentWorld !== '') {
+    for (var i=0; i < _store.list.length; i++) {
+      if (_store.list[i] !== '' && _store.list[i].homeworld.name === _store.currentWorld) {
+        isFrozen = true;
+      }
     }
   }
   _store.isFrozen = isFrozen; 
@@ -71,10 +69,9 @@ var removeTwoApprentices = function(array) {
 var requestMasters = function(quantity) {
   if (quantity !== 0) {
     var topMaster = _store.list[quantity];
-    console.log("MASTER");
     AjaxAPI.requestSiths(topMaster, 'master', quantity);
   }
-}
+};
 
 // requestTwoApprentices: This function operates in a manner similar to
 // requestTwoMasters above. 
@@ -84,7 +81,19 @@ var requestApprentices = function(quantity) {
     var bottomApprentice = _store.list[4-quantity];
     AjaxAPI.requestSiths(bottomApprentice, 'apprentice', quantity);
   }
-}
+};
+
+var abortAjaxRequests = function() {
+  AjaxAPI.xhr.abort();
+};
+
+var addInitialSith = function(responseObject) {
+  _store.list[0] = responseObject;
+  updateFrozenState();
+  if (_store.isFrozen) {
+    abortAjaxRequests();
+  }  
+};
 
 // addMaster:  This places in the store each Sith requested by the AjaxAPI
 // when requestTwoMasters is called, with each Sith being
@@ -98,12 +107,13 @@ var requestApprentices = function(quantity) {
 
 var addMaster = function(responseObject) {
   if (!_store.isFrozen) {
-    console.log("THIS:  ");
-    console.log(responseObject.quantity - responseObject.orderNum);
     _store.list[responseObject.quantity - responseObject.orderNum] = responseObject.Sith;
     updateFrozenState();
+    if (_store.isFrozen) {
+      abortAjaxRequests();
+    }
   }
-}
+};
 
 // addApprentice:  This function operates in a manner similar to addMaster
 // above.
@@ -112,21 +122,26 @@ var addApprentice = function(responseObject) {
   if (!_store.isFrozen) {
     _store.list[4 - (responseObject.quantity - responseObject.orderNum)] = responseObject.Sith;
     updateFrozenState();
+    if (_store.isFrozen) {
+      abortAjaxRequests();
+    }    
   }
-}
+};
 
 var updateCurrentWorld = function(data) {
   _store.currentWorld = data;
   updateFrozenState();
+  if (_store.isFrozen) {
+    abortAjaxRequests();
+  }
   // Continue filling empty spaces that are waiting
-  if (!_store.isFrozen && (AjaxAPI.xhr.readystate === 0 || AjaxAPI.xhr.readystate === 4)) {
+  if (!_store.isFrozen && (AjaxAPI.xhr.readyState === 0 || AjaxAPI.xhr.readyState === 4)) {
     var firstIndex = 0;
     while (_store.list[firstIndex] == '') {
       firstIndex++;
     }
     if (firstIndex !== 0 && firstIndex <= 4) {
       // Fill in from top
-      console.log("DO WE GET HERE 1");
       requestMasters(firstIndex);
     }
     else
@@ -151,8 +166,8 @@ var AppStore = ObjectAssign({}, EventEmitter.prototype, {
     this.removeListener(CHANGE_EVENT, cb);
   },
   initialize: function() {
+    AjaxAPI.initialize(3616);
     SocketAPI.socketConnect();
-    AjaxAPI.initialize();
   },
   getList: function() {
     return _store.list;      
@@ -171,13 +186,13 @@ AppDispatcher.register(function(payload) {
 
     case AppConstants.CLICK_DOWN:
 
-      // The inequality check here verifies that any previous
-      // CLICK_DOWN action has finished and the stores are finished
-      // being updated with data from the prevous request.  (If the
-      // bottom item of the list is empty at this point, that means the
-      // user had triggered a CLICK_DOWN action immediately prior to
-      // the current one and that it has not finished receiving its
-      // AJAX responses, so we should ignore the current one.)
+    // The inequality check here verifies that any previous
+    // CLICK_DOWN action has finished and the stores are finished
+    // being updated with data from the prevous request.  (If the
+    // bottom item of the list is empty at this point, that means the
+    // user had triggered a CLICK_DOWN action immediately prior to
+    // the current one and that it has not finished receiving its
+    // AJAX responses, so we should ignore the current one.)
 
       if (_store.list[4] !== '') {
         removeTwoMasters();
@@ -189,8 +204,8 @@ AppDispatcher.register(function(payload) {
 
     case AppConstants.CLICK_UP:
 
-      // The inequality check here serves a similar purpose to the
-      // one immediately above
+    // The inequality check here serves a similar purpose to the
+    // one immediately above
 
       if (_store.list[0] !== '') {
         removeTwoApprentices();
@@ -205,8 +220,8 @@ AppDispatcher.register(function(payload) {
       AppStore.emit(CHANGE_EVENT);
       break;
 
-    case AppConstants.INITIALIZE:
-      initialize(action.data);
+    case AppConstants.ADD_INITIAL_SITH:
+      addInitialSith(action.data);
       AppStore.emit(CHANGE_EVENT);
       break;
 

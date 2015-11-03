@@ -3,10 +3,10 @@ var AppConstants = require('../constants/AppConstants');
 
 var AjaxActions = {
 
-  initialize: function(array){
+  addInitialSith: function(sith){
     AppDispatcher.handleServerAction({
-      actionType: AppConstants.INITIALIZE,
-      data: array
+      actionType: AppConstants.ADD_INITIAL_SITH,
+      data: sith
     });
   },
 
